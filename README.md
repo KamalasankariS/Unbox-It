@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-185%20passing-brightgreen.svg)](tests)
-[![HF Space](https://img.shields.io/badge/demo-Hugging%20Face-yellow.svg)](https://huggingface.co/spaces/KamalasankariS/Unbox-It)
+[![HF Space](https://img.shields.io/badge/demo-Hugging%20Face-yellow.svg)](https://huggingface.co/spaces/Kamalasankari/Unbox-It)
 
 Unbox It decides **what** article to send **which** reader, **when**, and measures the
 impact with **A/B testing and off-policy evaluation**. It is trained and evaluated on
@@ -277,7 +277,7 @@ Deploy to a live URL two ways:
   successful build.
 - **Hugging Face Spaces**: `.github/workflows/deploy-hf.yml` mirrors the repo to a Docker
   Space on every green build, giving a second public demo at
-  `huggingface.co/spaces/KamalasankariS/Unbox-It`. It uses the Space config in
+  `huggingface.co/spaces/Kamalasankari/Unbox-It`. It uses the Space config in
   `deploy/hf/README.md` and stays dormant until you add an `HF_TOKEN` repository secret.
 - **Any container host** (Fly.io, Cloud Run): pull the GHCR image above, or build the
   Dockerfile directly.
