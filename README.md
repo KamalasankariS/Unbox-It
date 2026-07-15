@@ -1,13 +1,20 @@
-# Unbox It — The Inbox Recommender
+# Unbox It: The Inbox Recommender
 
-*Right Story, Right Reader, Right Time — an email-targeting recommender on the MIND dataset.*
+*Right Story, Right Reader, Right Time: an email-targeting recommender on the MIND dataset.*
+
+[![CI](https://github.com/KamalasankariS/Unbox-It/actions/workflows/ci.yml/badge.svg)](https://github.com/KamalasankariS/Unbox-It/actions/workflows/ci.yml)
+[![CD](https://github.com/KamalasankariS/Unbox-It/actions/workflows/cd.yml/badge.svg)](https://github.com/KamalasankariS/Unbox-It/actions/workflows/cd.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-185%20passing-brightgreen.svg)](tests)
+[![HF Space](https://img.shields.io/badge/demo-Hugging%20Face-yellow.svg)](https://huggingface.co/spaces/KamalasankariS/Unbox-It)
 
 Unbox It decides **what** article to send **which** reader, **when**, and measures the
 impact with **A/B testing and off-policy evaluation**. It is trained and evaluated on
 the real, public [MIND](https://msnews.github.io/) news dataset (Microsoft News), and
 served behind a FastAPI application and a batch pipeline.
 
-It is a research/portfolio project on a public dataset — not production traffic. Every
+It is a research/portfolio project on a public dataset, not production traffic. Every
 reported number records the data source it came from, and results produced inside the
 response simulator are labelled as simulated rather than presented as live measurements.
 
@@ -48,14 +55,14 @@ problem. Unbox It turns it into concrete, measurable objectives:
 | Requirement | Where it lives |
 |---|---|
 | ML applied to email (timing, content, audience) | `models/send_time.py`, `models/content_selection.py`, `models/audience.py` |
-| Recommendation with NLP / LLM embeddings | `features/text.py` — TF-IDF+SVD baseline, swappable for a sentence-transformer |
-| Ambiguous business question → ML problem | this README's problem framing; concrete objectives and metrics |
-| Data products behind APIs / batch | `serving/api.py` (FastAPI), `serving/batch.py` → `campaign_recommendations` table |
+| Recommendation with NLP / LLM embeddings | `features/text.py`: TF-IDF+SVD baseline, swappable for a sentence-transformer |
+| Ambiguous business question to ML problem | this README's problem framing; concrete objectives and metrics |
+| Data products behind APIs / batch | `serving/api.py` (FastAPI), `serving/batch.py` writing the `campaign_recommendations` table |
 | A/B testing and experimentation | `experiment/ab_test.py`, plus off-policy evaluation in `experiment/off_policy.py` |
 | Robustness and reproducibility | single seed, config hash in every `metrics.json`, deterministic pipeline, full test suite |
-| SQL over large datasets | `data/db.py` — SQLite event store (~5M rows) with SQL analytics |
-| Communicating complex ML | the `/why` endpoint and `explain/why.py` — per-recommendation explanations |
-| Respecting editorial judgement | `models/diversity.py` — MMR diversity, per-desk caps, editor pins |
+| SQL over large datasets | `data/db.py`: SQLite event store (~5M rows) with SQL analytics |
+| Communicating complex ML | the `/why` endpoint and `explain/why.py`, per-recommendation explanations |
+| Respecting editorial judgement | `models/diversity.py`: MMR diversity, per-desk caps, editor pins |
 
 ## Architecture
 
@@ -103,7 +110,7 @@ real-MIND`, `seed: 42`), regenerable with `python scripts/readme_numbers.py`. Th
 covers 156,965 train and 73,152 dev impressions, 65,238 articles, and 92,827 reader
 profiles; the SQL store holds 8.58M events.
 
-### Content selection — logged dev
+### Content selection (logged dev)
 
 Personalised cosine ranking against a popularity baseline, on the standard MIND metrics.
 
@@ -113,27 +120,27 @@ Personalised cosine ranking against a popularity baseline, on the standard MIND 
 | Popularity baseline | 0.5505 | 0.3078 | 0.2846 | 0.3375 |
 
 Personalisation beats popularity on AUC; popularity is fractionally ahead on the rank
-metrics. This is the honest shape of content-only ranking on MIND — a real but modest
-signal — and it is why the audience model below combines content with context rather than
+metrics. This is the honest shape of content-only ranking on MIND, a real but modest
+signal, and it is why the audience model below combines content with context rather than
 relying on cosine alone.
 
-### Audience, send-time — logged dev
+### Audience and send-time (logged dev)
 
 | Metric | Value |
 |---|---|
 | Audience propensity ROC-AUC | **0.603** |
-| Audience precision@500 vs base click rate | **0.200 vs 0.041 (4.9× lift)** |
+| Audience precision@500 vs base click rate | **0.200 vs 0.041 (4.9x lift)** |
 | Send-time open-rate uplift (best hour vs others) | **+2.7%** (0.0416 vs 0.0405) |
 | Readers with a personalised send hour | 46,920 |
 | Peak engagement hour (SQL analytics) | 08:00 |
 
-The propensity model — cosine plus history length, topic entropy, hour, desk, and article
-popularity — reaches ROC-AUC 0.603, and the 500 readers it ranks highest for a campaign
-click at 4.9× the population base rate. Send-time uplift is **observational**: MIND
+The propensity model (cosine plus history length, topic entropy, hour, desk, and article
+popularity) reaches ROC-AUC 0.603, and the 500 readers it ranks highest for a campaign
+click at 4.9x the population base rate. Send-time uplift is **observational**: MIND
 impressions cannot be re-sent at a different hour, so it compares impressions that landed
 in a reader's predicted best hour against the same population at other hours.
 
-### A/B, off-policy, bandit, uplift — simulated
+### A/B, off-policy, bandit, uplift (simulated)
 
 Measured inside the response simulator (see [below](#what-is-real-and-what-is-simulated)),
 not on live traffic.
@@ -141,25 +148,25 @@ not on live traffic.
 | Experiment | Result |
 |---|---|
 | **Off-policy: DR vs true policy value** | **DR 0.755, SNIPS 0.725 vs true 0.737**; IPS 0.300 (ESS 138) |
-| Off-policy: target vs logged policy | 0.737 vs 0.724 — personalised policy edges the logger |
-| A/B: personalised content vs popularity | −1.9%, p=0.024, 95% CI [−0.030, −0.002] |
-| Bandit: regret at 12k rounds (TS / ε-greedy / random) | 634 / 555 / 2378 |
-| Uplift: AUUC / Qini | 1.59 / 952 (top-30% uplift 0.999 vs bottom-30% −0.362) |
+| Off-policy: target vs logged policy | 0.737 vs 0.724, personalised policy edges the logger |
+| A/B: personalised content vs popularity | -1.9%, p=0.024, 95% CI [-0.030, -0.002] |
+| Bandit: regret at 12k rounds (TS / e-greedy / random) | 634 / 555 / 2378 |
+| Uplift: AUUC / Qini | 1.59 / 952 (top-30% uplift 0.999 vs bottom-30% -0.362) |
 
 **Off-policy evaluation is the centerpiece, and it works exactly as the theory predicts.**
 Doubly-robust and self-normalised IPS recover the target policy's true value to within 0.02
-and 0.01, while plain IPS is off by 0.44 — the textbook consequence of an effective sample
+and 0.01, while plain IPS is off by 0.44, the textbook consequence of an effective sample
 size of 138 out of 5,000 logged events. This is the whole argument for the method: it
 measures a small policy difference from logged data that a naive estimator gets badly
 wrong.
 
 **Two results are honestly negative, and reported rather than hidden.** The simulated A/B
-shows personalised *content selection* slightly *below* a pure-popularity control (−1.9%),
+shows personalised *content selection* slightly *below* a pure-popularity control (-1.9%),
 and the contextual bandit does not beat a static best-desk policy. Both reflect a genuine
 property of MIND: popularity is a famously strong CTR baseline, and TF-IDF profiles carry
 weak per-reader desk signal. The A/B control also directly optimises the simulator oracle's
-popularity feature, which makes it a deliberately hard baseline. The off-policy comparison —
-where the personalised policy does edge the logged one (0.737 vs 0.724) — is the more
+popularity feature, which makes it a deliberately hard baseline. The off-policy comparison,
+where the personalised policy does edge the logged one (0.737 vs 0.724), is the more
 reliable read, because its estimators are built to measure exactly these small differences.
 Chasing a positive A/B by re-tuning the experiment would violate the honesty rules this
 project is built on.
@@ -167,7 +174,7 @@ project is built on.
 ## Data
 
 Primary data is MIND-small. The dataset's original Microsoft blob URLs now return HTTP
-409 (`PublicAccessNotPermitted`) — public access was disabled on the storage account, so
+409 (`PublicAccessNotPermitted`): public access was disabled on the storage account, so
 they are dead for everyone, not only for restricted networks. `make data` therefore pulls
 from the HuggingFace re-host maintained by the recommenders-team project, which is
 byte-faithful to the official release (MIND-small dev is 42,416 articles and 73,152
@@ -185,10 +192,10 @@ in-memory schema, so the entire pipeline runs unchanged on either.
 
 This is the project's central honesty distinction.
 
-**Measured on logged MIND data** — content selection, audience, send-time, and the SQL
+**Measured on logged MIND data:** content selection, audience, send-time, and the SQL
 analytics. These are computed directly from recorded impressions and clicks.
 
-**Measured inside a response simulator** — A/B testing, off-policy evaluation, the
+**Measured inside a response simulator:** A/B testing, off-policy evaluation, the
 bandit, and uplift. A logged dataset records only what readers did when shown what they
 were actually shown; it cannot reveal what they would have done under a policy that was
 never run. So a response model is fitted on held-out dev and used as an oracle
@@ -198,14 +205,14 @@ absolute numbers inherit its own model error and are **not** live-test results.
 
 Two guards keep the simulator honest:
 - the oracle is fitted on **dev**, while the policies competing inside it are trained on
-  **train** — if a policy were the oracle itself, its winning would be a tautology;
+  **train**, so if a policy were the oracle itself, its winning would be a tautology;
 - off-policy evaluation reports the effective sample size and validates its estimators
   against a ground-truth value the simulator can compute but never shows them.
 
 Uplift additionally requires a control ("not emailed") arm, which MIND does not contain;
 that arm is constructed from a stated organic-engagement model whose parameters live in
 `config.yaml`. The fatigue model's unsubscribe risk is likewise an explicit parametric
-assumption, not a fit to unsubscribe labels — MIND has none. Both are labelled as
+assumption, not a fit to unsubscribe labels, and MIND has none. Both are labelled as
 assumptions wherever they surface.
 
 `metrics.json` carries a `provenance` block that lists exactly which result families are
@@ -215,17 +222,17 @@ logged and which are simulated.
 
 Beyond the core content/audience/send-time/A-B stack:
 
-- **Off-policy evaluation** (`experiment/off_policy.py`) — IPS, self-normalised IPS, and
+- **Off-policy evaluation** (`experiment/off_policy.py`): IPS, self-normalised IPS, and
   doubly-robust estimators, validated against the simulator's ground truth.
-- **Contextual bandit** (`models/bandit.py`) — linear Thompson sampling over desks,
+- **Contextual bandit** (`models/bandit.py`): linear Thompson sampling over desks,
   benchmarked against epsilon-greedy, static-greedy, and random on cumulative regret.
-- **Uplift / CATE** (`models/uplift.py`) — a T-learner that targets persuadable readers
+- **Uplift / CATE** (`models/uplift.py`): a T-learner that targets persuadable readers
   rather than those who would engage anyway, scored with AUUC and Qini.
-- **Fatigue-aware capping** (`models/fatigue.py`) — an unsubscribe-risk signal and a hard
+- **Fatigue-aware capping** (`models/fatigue.py`): an unsubscribe-risk signal and a hard
   frequency cap, reporting the engagement/volume trade-off.
-- **Editorial guardrails** (`models/diversity.py`) — MMR diversity, per-desk caps, and
+- **Editorial guardrails** (`models/diversity.py`): MMR diversity, per-desk caps, and
   editor pins/boosts, so editorial judgement can outrank the model.
-- **Explainability** (`explain/why.py`) — per-recommendation explanations naming the
+- **Explainability** (`explain/why.py`): per-recommendation explanations naming the
   shared themes, the reader's desks, and their closest prior reads.
 
 ## API
@@ -243,6 +250,37 @@ make api
 curl "localhost:8000/recommend?user_id=U13740&k=5"
 curl "localhost:8000/why?user_id=U13740&news_id=N55528"
 ```
+
+## Continuous integration and deployment
+
+**CI** (`.github/workflows/ci.yml`): every push and pull request runs the full pytest
+suite on Python 3.10, 3.11, and 3.12. The suite is offline and deterministic, using the
+simulated MIND-format sample, so it needs no dataset download and no network.
+
+**CD** (`.github/workflows/cd.yml`): once CI passes on `main`, a Docker image is built and
+published to the GitHub Container Registry at `ghcr.io/kamalasankaris/unbox-it:latest`.
+The image trains its serving models from the sample at build time, so it boots without a
+dataset and reports `data_source: "mind-format-sample"` on `/health`.
+
+Run the published image locally:
+
+```bash
+docker run -p 8000:8000 ghcr.io/kamalasankaris/unbox-it:latest
+curl "localhost:8000/recommend?user_id=U000001&k=5"
+```
+
+Deploy to a live URL two ways:
+
+- **Render** (recommended): connect this repo as a Blueprint at render.com; `render.yaml`
+  makes Render build the Dockerfile and redeploy on every push. Optionally add a
+  `RENDER_DEPLOY_HOOK_URL` repository secret to have the CD workflow ping Render after each
+  successful build.
+- **Hugging Face Spaces**: `.github/workflows/deploy-hf.yml` mirrors the repo to a Docker
+  Space on every green build, giving a second public demo at
+  `huggingface.co/spaces/KamalasankariS/Unbox-It`. It uses the Space config in
+  `deploy/hf/README.md` and stays dormant until you add an `HF_TOKEN` repository secret.
+- **Any container host** (Fly.io, Cloud Run): pull the GHCR image above, or build the
+  Dockerfile directly.
 
 ## Reproducibility
 
