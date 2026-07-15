@@ -1,0 +1,18 @@
+.git/
+.github/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Regenerated inside the image; never ship the local copies (the event DB is ~800 MB).
+data/
+runs/
+
+# Source brief and editor/OS noise.
+*.doc
+~$*
+.vscode/
+.idea/
+.DS_Store
