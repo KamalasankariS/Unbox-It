@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Datasets are large and redistributable only from their source. Keep them local.
+data/
+!data/.gitkeep
+
+# Run outputs are reproducible from (code + config); keep the tree clean but
+# allow a curated run to be committed by force-adding it if you want it in the README.
+runs/
+!runs/.gitkeep
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+~$*
