@@ -323,5 +323,9 @@ def _ate_with_standard_error(treatment: np.ndarray, outcome: np.ndarray) -> tupl
 
 
 def _trapezoid(y: np.ndarray, x: np.ndarray) -> float:
-    integrate = getattr(np, "trapezoid", np.trapz)
-    return float(integrate(y, x))
+    # np.trapz was renamed to np.trapezoid in numpy 2.0 and removed in later 2.x.
+    # Access trapz only when trapezoid is absent, so the removed name is never touched
+    # on a modern numpy.
+    if hasattr(np, "trapezoid"):
+        return float(np.trapezoid(y, x))
+    return float(np.trapz(y, x))
