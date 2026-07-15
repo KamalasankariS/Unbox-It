@@ -1,0 +1,11 @@
+# Render Blueprint. Connect this repo at https://render.com (New > Blueprint) and Render
+# builds the Dockerfile and deploys on every push to main. No GitHub secrets required for
+# this path; Render watches the repo directly.
+services:
+  - type: web
+    name: unbox-it
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
