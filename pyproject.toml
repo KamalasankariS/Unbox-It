@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "newspush"
+version = "0.1.0"
+description = "Email-targeting recommender on the MIND news dataset: content selection, audience creation, send-time optimisation, A/B + off-policy evaluation."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scikit-learn>=1.3",
+    "scipy>=1.10",
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+llm = ["sentence-transformers>=2.2"]
+dev = ["pytest>=7.4", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+include = ["newspush*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
