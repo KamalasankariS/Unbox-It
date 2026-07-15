@@ -1,0 +1,38 @@
+name: Deploy to Hugging Face Space
+
+# Runs after CI succeeds on main. Skips itself cleanly if the HF_TOKEN secret is absent,
+# so the workflow is safe to merge before the Space is set up.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  sync:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USER: KamalasankariS
+          HF_SPACE: Unbox-It
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN secret not set; skipping Hugging Face deploy."
+            exit 0
+          fi
+          git config user.email "github-actions@users.noreply.github.com"
+          git config user.name "github-actions"
+          # Swap in the Space README (with HF frontmatter) only in this runner, so the
+          # GitHub README is never touched.
+          cp deploy/hf/README.md README.md
+          git add README.md
+          git commit -m "chore: hugging face space config" || echo "no changes to commit"
+          git push --force "https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE}" HEAD:main
+          echo "Pushed to https://huggingface.co/spaces/${HF_USER}/${HF_SPACE}"
