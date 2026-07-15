@@ -1,0 +1,93 @@
+# NewsPush configuration.
+# Every number that affects a result lives here, so a run is reproducible from
+# (code commit + this file). The pipeline records a hash of this file in metrics.json.
+
+seed: 42
+
+paths:
+  data_dir: data
+  mind_train: data/MINDsmall_train
+  mind_dev: data/MINDsmall_dev
+  runs_dir: runs
+  db_path: runs/events.db
+
+# Controls the fallback MIND-format sample generator (newspush/data/make_sample.py).
+# Only used when the real MIND TSVs are absent. Results from it are labelled
+# data_source="mind-format-sample" everywhere they appear.
+sample:
+  n_users: 800
+  n_news: 600
+  n_impressions: 6000
+  candidates_per_impression: 10
+  history_len_range: [3, 25]
+  topic_affinity_weight: 2.2   # strength of the latent topic-preference signal
+  hour_effect_weight: 1.1      # strength of the preferred-open-hour signal
+  base_click_logit: -2.0       # sets the base click rate (sigmoid(-2.0) ~= 12%)
+
+encoder:
+  kind: tfidf-svd            # "tfidf-svd" (default) | "sentence-transformer" (optional dep)
+  dim: 128                   # SVD components
+  max_features: 50000        # TF-IDF vocabulary cap
+  min_df: 2
+  ngram_range: [1, 2]
+  st_model: sentence-transformers/all-MiniLM-L6-v2   # only read when kind=sentence-transformer
+
+content_selection:
+  top_k: [5, 10]             # nDCG@K values to report
+  max_eval_impressions: 20000   # cap dev impressions scored, for tractable runtime
+
+audience:
+  model: logistic            # "logistic" | "gbdt"
+  max_train_rows: 300000     # cap on (impression, candidate) training pairs
+  c: 1.0                     # inverse regularisation strength for logistic
+  audience_k: 500            # size of the audience returned per campaign
+
+send_time:
+  n_hours: 24
+  prior_alpha: 1.0           # Beta/Laplace smoothing toward the global hourly rate
+  prior_strength: 20.0       # pseudo-counts of the global prior per user-hour cell
+  min_events_for_personal: 5 # below this, fall back to the global best hour
+
+ab_test:
+  alpha: 0.05                # two-sided significance level
+  n_users_per_arm: 2000      # simulation harness arm size
+  emails_per_user: 3
+
+off_policy:
+  logging_epsilon: 0.15      # exploration rate of the simulated logging policy
+  clip_weight: 20.0          # importance-weight clip for IPS/DR (bias-variance trade-off)
+
+fatigue:
+  max_emails_per_week: 4     # frequency cap
+  unsubscribe_base_rate: 0.002
+  fatigue_slope: 0.35        # how fast unsubscribe-risk grows with recent send volume
+  risk_threshold: 0.02       # suppress a send above this predicted unsubscribe risk
+
+# MIND has no randomised email holdout, so the "not emailed" arm needed for uplift
+# modelling does not exist in the data and has to be constructed. These parameters
+# define that construction explicitly. They are ASSUMPTIONS, not estimates: see the
+# module docstring in models/uplift.py and the README section "What is simulated".
+uplift:
+  n_users: 6000
+  treatment_fraction: 0.5
+  organic_base_rate: 0.35   # engaged readers find a story without being emailed
+  annoyance_weight: 0.30    # an irrelevant send can displace an organic visit
+
+bandit:
+  # Thompson sampling is asymptotic: it pays its exploration cost early and only
+  # overtakes epsilon-greedy once its regret flattens. A short horizon would make it
+  # look worse than it is; metrics.json records the full regret curve either way.
+  n_rounds: 12000
+  n_arms: 12                 # topic arms
+  context_dim: 8
+  prior_variance: 1.0
+  noise_variance: 0.25
+  epsilon: 0.1               # for the epsilon-greedy baseline we compare against
+
+diversity:
+  mmr_lambda: 0.7            # 1.0 = pure relevance, 0.0 = pure diversity
+  max_per_category: 2        # editorial guardrail: cap articles per desk in one send
+
+serving:
+  batch_top_n: 5             # articles per user in the campaign_recommendations table
+  batch_max_users: 2000
