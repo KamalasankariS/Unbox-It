@@ -11,6 +11,8 @@
 
 **Live demo:** [unbox-it.onrender.com/docs](https://unbox-it.onrender.com/docs) (interactive API, running the simulated sample). First load may take ~50s while the free instance wakes.
 
+[![Unbox It demo](docs/demo.gif)](https://unbox-it.onrender.com/docs)
+
 Unbox It decides **what** article to send **which** reader, **when**, and measures the
 impact with **A/B testing and off-policy evaluation**. It is trained and evaluated on
 the real, public [MIND](https://msnews.github.io/) news dataset (Microsoft News), and
@@ -25,19 +27,30 @@ response simulator are labelled as simulated rather than presented as live measu
 > testing and off-policy evaluation (IPS/SNIPS/Doubly-Robust); served recommendations
 > via FastAPI and a batch pipeline.
 
-## Quickstart
+## Try it in 3 steps
+
+No dataset, config, or GPU needed. It runs on a built-in simulated sample, so a fresh
+clone works immediately.
 
 ```bash
-make setup        # install dependencies
-make data         # download MIND-small (see "Data" if the download fails)
-make run          # end-to-end pipeline -> runs/<run_id>/metrics.json
-make test         # full pytest suite
-make api          # serve the FastAPI app on :8000
+git clone https://github.com/KamalasankariS/Unbox-It.git && cd Unbox-It
+pip install -r requirements.txt
+python -m newspush.pipeline        # trains, evaluates, writes runs/<id>/metrics.json
 ```
 
+Then serve the API and open http://localhost:8000/docs:
+
+```bash
+python -m uvicorn newspush.serving.api:app --port 8000
+```
+
+Prefer not to install anything? Use the [live demo](https://unbox-it.onrender.com/docs).
+For the complete guide (every command, endpoint, config option, real-MIND setup, and
+troubleshooting) see the **[user manual](docs/USAGE.md)**.
+
 The pipeline runs with or without the dataset: if MIND is not present it falls back to a
-clearly-labelled simulated sample so a fresh clone is runnable in one command. `make
-test` never touches the network and always uses the sample.
+clearly-labelled simulated sample. `make test` runs the full suite offline. The `make`
+shortcuts (`setup`, `data`, `run`, `test`, `api`, `batch`) are documented in the manual.
 
 ## What problem this solves
 
@@ -330,6 +343,15 @@ newspush/
 tests/                      pytest for every module
 scripts/readme_numbers.py   print README figures from a run
 ```
+
+## Feedback
+
+If you ran this, tried the demo, or found it through a resume or portfolio, I would
+genuinely like to hear how it went, positive or critical. Open a
+[Feedback issue](https://github.com/KamalasankariS/Unbox-It/issues/new?template=feedback.yml)
+(no field is required) or start a Discussion. Bug reports and questions are welcome too.
+
+If it was useful, a star helps other people find it.
 
 ## License
 
