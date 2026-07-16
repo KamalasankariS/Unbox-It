@@ -1,0 +1,47 @@
+name: Feedback
+description: Tried Unbox It, saw it on a resume, or have thoughts? Tell me anything.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking a look. Any feedback is welcome, positive or critical. No field is required.
+  - type: dropdown
+    id: context
+    attributes:
+      label: How did you come across this?
+      options:
+        - Ran it locally
+        - Tried the live demo
+        - Found it via a resume or portfolio
+        - Browsing GitHub
+        - Other
+    validations:
+      required: false
+  - type: dropdown
+    id: worked
+    attributes:
+      label: Did it work for you?
+      options:
+        - Yes, worked as described
+        - Partially
+        - No, hit a problem
+        - Did not run it
+    validations:
+      required: false
+  - type: textarea
+    id: thoughts
+    attributes:
+      label: Your feedback
+      description: What worked, what did not, what was confusing, what you would want next.
+      placeholder: Anything at all.
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: Environment (only if you hit a problem)
+      placeholder: e.g. Python 3.11 on Windows 11
+    validations:
+      required: false
