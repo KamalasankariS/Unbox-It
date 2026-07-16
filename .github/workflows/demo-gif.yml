@@ -14,15 +14,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install VHS and its runtime deps (ttyd + ffmpeg) directly, rather than via
+      # vhs-action, whose bundled ffmpeg installer is currently unreliable on the runners.
+      - name: Install VHS, ttyd, and ffmpeg
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg ttyd
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" \
+            | sudo tee /etc/apt/sources.list.d/charm.list
+          sudo apt-get update
+          sudo apt-get install -y vhs
+
       # Wake the free Render instance first so the recorded requests are fast, not a
       # 50-second cold start.
       - name: Warm up the live demo
         run: curl -sS --max-time 120 https://unbox-it.onrender.com/health || true
 
       - name: Render the GIF
-        uses: charmbracelet/vhs-action@v2
-        with:
-          path: demo.tape
+        run: vhs demo.tape
 
       - name: Commit the GIF
         run: |
