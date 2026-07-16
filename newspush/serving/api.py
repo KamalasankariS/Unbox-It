@@ -17,6 +17,7 @@ import logging
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.responses import HTMLResponse
 
 from newspush.artifacts import Artifacts, artifacts_path
 from newspush.config import Config, load_config
@@ -27,6 +28,56 @@ log = logging.getLogger(__name__)
 
 MAX_RECOMMENDATIONS = 50
 MAX_AUDIENCE = 5000
+
+REPO_URL = "https://github.com/KamalasankariS/Unbox-It"
+
+# Static landing page so the base URL is informative rather than a 404. Self-contained
+# (no external assets) and works whether or not the models are loaded.
+LANDING_PAGE = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unbox It: The Inbox Recommender</title>
+<style>
+  :root {{ color-scheme: light dark; }}
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 640px; margin: 12vh auto; padding: 0 1.25rem; line-height: 1.6;
+  }}
+  h1 {{ margin-bottom: 0.25rem; font-size: 1.6rem; }}
+  .tagline {{ opacity: 0.75; margin-top: 0; }}
+  .note {{ font-size: 0.9rem; opacity: 0.75; border-left: 3px solid currentColor; padding-left: 0.75rem; }}
+  a.button {{
+    display: inline-block; margin: 0.35rem 0.5rem 0.35rem 0; padding: 0.5rem 0.9rem;
+    border: 1px solid currentColor; border-radius: 8px; text-decoration: none; font-weight: 600;
+  }}
+  code {{ font-size: 0.88rem; }}
+  ul {{ padding-left: 1.1rem; }}
+</style>
+</head>
+<body>
+  <h1>Unbox It</h1>
+  <p class="tagline">Right Story, Right Reader, Right Time: an email-targeting recommender on the MIND dataset.</p>
+  <p>
+    <a class="button" href="/docs">Try the API</a>
+    <a class="button" href="/health">Health</a>
+    <a class="button" href="{REPO_URL}">Source on GitHub</a>
+  </p>
+  <p>Live endpoints:</p>
+  <ul>
+    <li><code>/recommend?user_id=U000001&amp;k=5</code> : top articles for a reader</li>
+    <li><code>/why?user_id=U000001&amp;news_id=N000027</code> : why an article was recommended</li>
+    <li><code>/audience?news_id=N000027&amp;k=10</code> : top readers for an article</li>
+    <li><code>/send-time?user_id=U000001</code> : a reader's best send hour</li>
+  </ul>
+  <p class="note">
+    This live instance serves the simulated MIND-format sample (confirmed on <code>/health</code>),
+    so it runs without a dataset and uses no real user data. Real-MIND results and full source are
+    on GitHub.
+  </p>
+</body>
+</html>"""
 
 # MMR is quadratic in the candidate count and the tail of a 50k-article catalogue is
 # never competitive, so the guardrails run over a shortlist rather than the whole thing.
@@ -58,13 +109,17 @@ def create_app(artifacts: Artifacts | None = None, cfg: Config | None = None) ->
     state = ServingState(cfg=cfg, artifacts=artifacts)
 
     app = FastAPI(
-        title="NewsPush",
+        title="Unbox It: The Inbox Recommender",
         description="Email-targeting recommender on the MIND news dataset.",
         version="0.1.0",
     )
 
     def get_state() -> ServingState:
         return state
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def root() -> str:
+        return LANDING_PAGE
 
     @app.get("/health")
     def health(state: ServingState = Depends(get_state)) -> dict[str, Any]:

@@ -7,7 +7,9 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-185%20passing-brightgreen.svg)](tests)
-[![HF Space](https://img.shields.io/badge/demo-Hugging%20Face-yellow.svg)](https://huggingface.co/spaces/Kamalasankari/Unbox-It)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://unbox-it.onrender.com/docs)
+
+**Live demo:** [unbox-it.onrender.com/docs](https://unbox-it.onrender.com/docs) (interactive API, running the simulated sample). First load may take ~50s while the free instance wakes.
 
 Unbox It decides **what** article to send **which** reader, **when**, and measures the
 impact with **A/B testing and off-policy evaluation**. It is trained and evaluated on
